@@ -1,0 +1,68 @@
+/* REXX */
+
+"FREE FI(INDD)"
+"FREE FI(OUTDD)"
+
+"ALLOC FI(INDD) DA('Z00620.ADVINPUT.Y22(DAY2IN)') SHR REUSE"
+"ALLOC FI(OUTDD) DA('Z00620.ADVREXX(OUTPUT)') SHR REUSE"
+
+"EXECIO * DISKR INDD (FINIS STEM input."
+"FREE FI(INDD)"
+
+/*
+elf key
+a = rock
+b = paper
+c = scissors
+
+my key
+x = lose
+y = draw
+z = win
+
+my key
+x = rock
+y = paper
+z = scissors
+
+x = 1
+y = 2
+z = 3
+
+lost = 0
+draw = 3
+win = 6
+*/
+
+score = 0
+
+
+do i = 1 to input.0
+    parse var input.i elf you
+    select
+        when elf = 'A' then do
+            if you = 'X' then score = score + 3 /*lose*/
+            else if you = 'Y' then score = score + 4 /*draw*/
+            else if you = 'Z' then score = score + 8 /*win*/
+        end
+
+        when elf = 'B' then do
+            if you = 'X' then score = score + 1 /*lose*/
+            else if you = 'Y' then score = score + 5 /*draw*/
+            else if you = 'Z' then score = score + 9 /*win*/
+        end
+        when elf = 'C' then do
+            if you = 'X' then score = score + 2 /*lose*/
+            else if you = 'Y' then score = score + 6 /*draw*/
+            else if you = 'Z' then score = score + 7 /*win*/
+
+        end
+        otherwise nop
+    end
+end
+
+say score
+push score
+
+"EXECIO 1 DISKW OUTDD (FINIS"
+"FREE FI(OUTDD)"

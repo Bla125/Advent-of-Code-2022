@@ -1,0 +1,48 @@
+/* REXX */
+
+"FREE FI(INDD)"
+"FREE FI(OUTDD)"
+"ALLOC FI(INDD) DA('Z00620.ADVINPUT.Y22(DAY1IN)') SHR REUSE"
+"ALLOC FI(OUTDD) DA('Z00620.ADVREXX(OUTPUT)') SHR REUSE"
+
+"EXECIO * DISKR INDD (FINIS STEM input."
+"FREE FI(INDD)"
+
+
+total = 0
+elf_cals. = 0
+j = 1
+do i = 1 to input.0
+    if datatype(input.i, 'N') = 1 then do
+        total = total + input.i
+    end
+    else do
+        elf_cals.j = total
+        total = 0
+        j = j + 1
+    end
+end
+elf_cals.j = total
+
+holder = 0
+max_cals. = 0
+list = ''
+do n = 1 to 3
+    do i = 1 to j
+        if elf_cals.i > max_cals.n then do
+            holder = max_cals.n
+            max_cals.n = elf_cals.i
+            elf_cals.i = holder
+        end
+    end
+end
+
+do i = 1 to 3
+    say max_cals.i
+end
+
+max_total = max_cals.1 + max_cals.2 + max_cals.3
+say max_total
+push max_total
+"EXECIO 1 DISKW OUTDD (FINIS"
+"FREE FI(OUTDD)"
