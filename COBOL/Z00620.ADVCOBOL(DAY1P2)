@@ -1,0 +1,109 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DAY1P2.
+       AUTHOR. MATTHEW.
+
+       ENVIRONMENT DIVISION.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-DATA ASSIGN TO INDATA.
+           SELECT OUT-DATA ASSIGN TO OUTDATA.
+
+       DATA DIVISION.
+
+       FILE SECTION.
+       FD  IN-DATA RECORD CONTAINS 80 CHARACTERS RECORDING MODE F.
+       01  IN-DATA-REC       PIC X(80).
+
+       FD  OUT-DATA RECORD CONTAINS 80 CHARACTERS RECORDING MODE F.
+       01  OUT-DATA-REC      PIC X(80).
+
+       WORKING-STORAGE SECTION.
+       01  WS-SWITCHES.
+           05 EOF-SWITCH     PIC X(1) VALUE 'N'.
+
+       01  WS-TABLES.
+           05 ELF-CALS-TABLE PIC 9(5) VALUE 0 OCCURS 2255 TIMES.
+           05 MAX-CALS-TABLE PIC 9(5) VALUE 0 OCCURS 3 TIMES.
+
+       01  WS-INDEX.
+           05 I              PIC 9(4) VALUE 1.
+           05 INDEX-RANGE    PIC 9(4) VALUE 1.
+           05 N              PIC 9(1) VALUE 1.
+
+       01  TEMP              PIC 9(5) VALUE 0.
+       01  TOTAL             PIC 9(7) VALUE 0.
+
+
+       PROCEDURE DIVISION.
+
+
+       A000-START.
+           OPEN INPUT IN-DATA.
+           OPEN OUTPUT OUT-DATA.
+
+           PERFORM A100-READ-FILE.
+           PERFORM A200-CALCULATE-MAXCAL.
+           PERFORM A101-WRITE-OUTPUT.
+
+           CLOSE IN-DATA.
+           CLOSE OUT-DATA.
+       A000-END.
+           GOBACK.
+
+
+       A100-READ-FILE.
+           PERFORM UNTIL EOF-SWITCH = 'Y'
+
+              READ IN-DATA
+                 AT END
+                    MOVE 'Y' TO EOF-SWITCH
+                 NOT AT END
+                    IF IN-DATA-REC = SPACES OR
+                       IN-DATA-REC = LOW-VALUES THEN
+                       MOVE TOTAL TO ELF-CALS-TABLE(I)
+                       MOVE 0 TO TOTAL
+                       COMPUTE I = I + 1
+                    ELSE
+                       UNSTRING IN-DATA-REC DELIMITED BY SPACES
+                          INTO TEMP
+                       COMPUTE TOTAL = TOTAL + TEMP
+                    END-IF
+              END-READ
+
+           END-PERFORM
+
+           MOVE TOTAL TO ELF-CALS-TABLE(I)
+           MOVE 0 TO TOTAL
+           MOVE I TO INDEX-RANGE
+           MOVE 1 TO I
+           .
+
+
+       A200-CALCULATE-MAXCAL.
+           PERFORM UNTIL N > 3
+              PERFORM UNTIL I > INDEX-RANGE
+
+                 IF ELF-CALS-TABLE(I) > MAX-CALS-TABLE(N) THEN
+                    MOVE MAX-CALS-TABLE(N) TO TEMP
+                    MOVE ELF-CALS-TABLE(I) TO MAX-CALS-TABLE(N)
+                    MOVE TEMP TO ELF-CALS-TABLE(I)
+                 END-IF
+                 COMPUTE I = I + 1
+
+              END-PERFORM
+
+              MOVE 1 TO I
+              COMPUTE N = N + 1
+
+           END-PERFORM
+
+           COMPUTE TOTAL = MAX-CALS-TABLE(1) + MAX-CALS-TABLE (2)
+                           + MAX-CALS-TABLE (3)
+           .
+
+
+       A101-WRITE-OUTPUT.
+           MOVE TOTAL TO OUT-DATA-REC
+           WRITE OUT-DATA-REC
+           .

@@ -1,0 +1,104 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DAY2P1.
+       AUTHOR. MATTHEW.
+
+       ENVIRONMENT DIVISION.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-DATA ASSIGN TO INDATA.
+           SELECT OUT-DATA ASSIGN TO OUTDATA.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD  IN-DATA RECORD CONTAINS 80 CHARACTERS RECORDING MODE F.
+       01  IN-DATA-REC       PIC X(80).
+
+       FD  OUT-DATA RECORD CONTAINS 80 CHARACTERS RECORDING MODE F.
+       01  OUT-DATA-REC      PIC X(80).
+
+       WORKING-STORAGE SECTION.
+       01  WS-SWITCHES.
+           05 EOF-SWITCH     PIC X(1) VALUE 'N'.
+
+       01  OUTCOMES          PIC A(3) VALUE SPACES.
+           88 A-X VALUE 'A X'.
+           88 A-Y VALUE 'A Y'.
+           88 A-Z VALUE 'A Z'.
+
+           88 B-X VALUE 'B X'.
+           88 B-Y VALUE 'B Y'.
+           88 B-Z VALUE 'B Z'.
+
+           88 C-X VALUE 'C X'.
+           88 C-Y VALUE 'C Y'.
+           88 C-Z VALUE 'C Z'.
+
+       01  SCORE             PIC 9(5) VALUE ZEROS.
+
+
+       PROCEDURE DIVISION.
+
+       A000-START.
+           OPEN INPUT IN-DATA.
+           OPEN OUTPUT OUT-DATA.
+
+           PERFORM A100-READ-AND-CALC-SCORE.
+           PERFORM A101-WRITE-OUTPUT.
+
+           CLOSE IN-DATA.
+           CLOSE OUT-DATA.
+       A000-END.
+           GOBACK.
+
+      * elf key
+      * a = rock
+      * b = paper
+      * c = scissors
+
+      * my key
+      * x = rock
+      * y = paper
+      * z = scissors
+
+      * x = 1
+      * y = 2
+      * z = 3
+
+      * lost = 0
+      * draw = 3
+      * win = 6
+
+       A100-READ-AND-CALC-SCORE.
+           PERFORM UNTIL EOF-SWITCH = 'Y'
+
+              READ IN-DATA
+                 AT END
+                    MOVE 'Y' TO EOF-SWITCH
+                 NOT AT END
+                 MOVE IN-DATA-REC(1:3) TO OUTCOMES
+
+                 EVALUATE TRUE
+                    WHEN A-X ADD 3 TO SCORE
+                    WHEN A-Y ADD 4 TO SCORE
+                    WHEN A-Z ADD 8 TO SCORE
+
+                    WHEN B-X ADD 1 TO SCORE
+                    WHEN B-Y ADD 5 TO SCORE
+                    WHEN B-Z ADD 9 TO SCORE
+
+                    WHEN C-X ADD 2 TO SCORE
+                    WHEN C-Y ADD 6 TO SCORE
+                    WHEN C-Z ADD 7 TO SCORE
+                 END-EVALUATE
+
+              END-READ
+
+           END-PERFORM
+           .
+
+
+       A101-WRITE-OUTPUT.
+           MOVE SCORE TO OUT-DATA-REC
+           WRITE OUT-DATA-REC
+           .
