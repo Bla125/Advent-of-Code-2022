@@ -1,0 +1,69 @@
+/* REXX */
+
+"FREE FI(INDD)"
+"FREE FI(OUTDD)"
+"ALLOC FI(INDD) DA('Z00620.ADVINPUT.Y22(DAY3IN)') SHR REUSE"
+"ALLOC FI(OUTDD) DA('Z00620.ADVREXX(OUTPUT)') SHR REUSE"
+
+"EXECIO * DISKR INDD (FINIS STEM input."
+"FREE FI(INDD)"
+
+sum = 0
+lowercase = xrange('a', 'z')
+
+do i = 1 to input.0 by 3 /* get input in groups of three */
+    j = i + 1
+    k = i + 2
+    first_bag = strip(input.i)
+    second_bag = strip(input.j)
+    third_bag = strip(input.k)
+
+    forever_break = 1
+    matched = 'false'
+    do until matched = 'true'
+        forever_break = forever_break + 1 /* prevent endless loop */
+        if forever_break > 1000 then exit
+
+        one_two_match = verify(first_bag, second_bag, M) /* find matching char*/
+        same_char = substr(first_bag, one_two_match, 1) /* get matching char*/
+        same_dec = c2d(same_char)       /* get decimal representation of char*/
+
+        /* if matching char is in third bag as well */
+        if pos(same_char, third_bag) > 0 then do 
+            matched = 'true'
+            /* is lowercase */
+            if verify(same_char, lowercase, M) > 0 then do
+                if same_dec < 138 then
+                    sum = sum + (same_dec - 128)
+                else if same_dec > 144 & same_dec < 154 then
+                    sum = sum + (same_dec - 135)
+                else
+                    sum = sum + (same_dec - 143)
+            end
+
+            /*is uppercase */
+            else do
+                if same_dec < 202 then
+                    sum = sum + (same_dec - 192) + 26
+                else if same_dec > 207 & same_dec < 218 then
+                    sum = sum + (same_dec - 199) + 26
+                else
+                    sum = sum + (same_dec - 207) + 26
+            end
+        end
+
+        /* if matching char is not in third bag as well */
+        else do
+            /* remove matching char from first bag*/
+            first_bag = delstr(first_bag, one_two_match, 1) 
+        end
+
+    end
+
+end
+
+say sum
+push sum
+
+'EXECIO 1 DISKW OUTDD (FINIS'
+"FREE FI(OUTDD)"

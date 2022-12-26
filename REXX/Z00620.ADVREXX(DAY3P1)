@@ -1,0 +1,50 @@
+/* REXX */
+
+"FREE FI(INDD)"
+"FREE FI(OUTDD)"
+"ALLOC FI(INDD) DA('Z00620.ADVINPUT.Y22(DAY3IN)') SHR REUSE"
+"ALLOC FI(OUTDD) DA('Z00620.ADVREXX(OUTPUT)') SHR REUSE"
+
+"EXECIO * DISKR INDD (FINIS STEM input."
+"FREE FI(INDD)"
+
+sum = 0
+lowercase = xrange('a', 'z')
+
+do i = 1 to input.0
+
+    len = length(strip(input.i))                /* get length of string */
+    half = len / 2                              /* half length of string */
+    left_str = substr(input.i, 1, half)         /* get first half of string */
+    right_str = substr(input.i, half+1, half)   /* get second half of string */
+    same_pos = verify(left_str, right_str, M)   /* find matching character */
+    same_char = substr(left_str, same_pos, 1)   /* get matching character */
+    same_dec = c2d(same_char)          /* get decimal representation of char */
+
+    /* is lowercase */
+    if verify(same_char, lowercase, M) > 0 then do
+        if same_dec < 138 then
+            sum = sum + (same_dec - 128)
+        else if same_dec > 144 & same_dec < 154 then
+            sum = sum + (same_dec - 135)
+        else
+            sum = sum + (same_dec - 143)
+    end
+
+    /*is uppercase */
+    else do
+        if same_dec < 202 then
+            sum = sum + (same_dec - 192) + 26
+        else if same_dec > 207 & same_dec < 218 then
+            sum = sum + (same_dec - 199) + 26
+        else
+            sum = sum + (same_dec - 207) + 26
+    end
+
+end
+
+say sum
+push sum
+
+"EXECIO 1 DISKW OUTDD (FINIS"
+"FREE FI(OUTDD)"
