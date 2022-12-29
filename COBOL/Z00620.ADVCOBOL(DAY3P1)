@@ -1,0 +1,120 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DAY3P1.
+       AUTHOR. MATTHEW.
+
+       ENVIRONMENT DIVISION.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT IN-DATA ASSIGN TO INDATA.
+           SELECT OUT-DATA ASSIGN TO OUTDATA.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD  IN-DATA RECORD CONTAINS 80 CHARACTERS RECORDING MODE F.
+       01  IN-DATA-REC       PIC X(80).
+           88 END-OF-FILE    VALUE HIGH-VALUES.
+
+       FD  OUT-DATA RECORD CONTAINS 80 CHARACTERS RECORDING MODE F.
+       01  OUT-DATA-REC      PIC X(80).
+
+       WORKING-STORAGE SECTION.
+       01  WORK-AREA         PIC X(80) VALUE SPACES.
+
+       01  WS-CNTR           PIC 9(2)  VALUE ZEROS.
+       01  WS-INDEX          PIC 9(2)  VALUE ZEROS.
+
+       01  WS-LEN            PIC 9(2)  VALUE ZEROS.
+       01  WS-HALF-LEN       PIC 9(2)  VALUE ZEROS.
+
+       01  LEFT-BAG          PIC X(40) VALUE SPACES.
+       01  RIGHT-BAG         PIC X(40) VALUE SPACES.
+
+       01  MATCHING          PIC X(1)  VALUE SPACES.
+       01  MATCHING-DEC      PIC 9(3)  VALUE ZEROES.
+           88 LOWER-A-I      VALUE 129 THRU 137.
+           88 LOWER-J-R      VALUE 145 THRU 153.
+           88 LOWER-S-Z      VALUE 162 THRU 169.
+
+           88 UPPER-A-I      VALUE 193 THRU 201.
+           88 UPPER-J-R      VALUE 209 THRU 217.
+           88 UPPER-S-Z      VALUE 226 THRU 233.
+
+       01  TOTAL             PIC 9(5)  VALUE ZEROS.
+
+
+       PROCEDURE DIVISION.
+
+       A000-START.
+           OPEN INPUT IN-DATA.
+           OPEN OUTPUT OUT-DATA.
+
+           PERFORM A100-READ-AND-CALC-SCORE.
+           PERFORM A101-WRITE-OUTPUT.
+
+           CLOSE IN-DATA.
+           CLOSE OUT-DATA.
+       A000-END.
+           GOBACK.
+
+
+
+       A100-READ-AND-CALC-SCORE.
+           PERFORM UNTIL END-OF-FILE
+
+           READ IN-DATA
+              AT END
+                 SET END-OF-FILE TO TRUE
+              NOT AT END
+                 MOVE IN-DATA-REC TO WORK-AREA
+                 MOVE ZERO TO WS-LEN
+                 INSPECT FUNCTION REVERSE(WORK-AREA)
+                    TALLYING WS-LEN FOR LEADING SPACES
+                 COMPUTE WS-LEN = 80 - WS-LEN
+                 COMPUTE WS-HALF-LEN = WS-LEN / 2
+                 MOVE IN-DATA-REC(1 : WS-HALF-LEN) TO LEFT-BAG
+                 MOVE IN-DATA-REC(WS-HALF-LEN + 1:) TO RIGHT-BAG
+
+                 MOVE ZEROS TO WS-CNTR
+                 PERFORM WITH TEST AFTER
+                    VARYING WS-INDEX FROM 1 BY 1 UNTIL WS-CNTR >= 1
+
+                    INSPECT RIGHT-BAG TALLYING WS-CNTR
+                       FOR ALL LEFT-BAG(WS-INDEX:1)
+
+                    IF WS-INDEX > WS-HALF-LEN THEN
+                       MOVE 2 TO WS-CNTR
+                    END-IF
+
+                 END-PERFORM
+
+                 MOVE LEFT-BAG(WS-INDEX:1) TO MATCHING
+                 COMPUTE MATCHING-DEC = FUNCTION ORD(MATCHING)
+                 COMPUTE MATCHING-DEC = MATCHING-DEC - 1
+
+                 EVALUATE TRUE
+                    WHEN LOWER-A-I COMPUTE TOTAL = TOTAL +
+                                                  (MATCHING-DEC - 128)
+                    WHEN LOWER-J-R COMPUTE TOTAL = TOTAL +
+                                                  (MATCHING-DEC - 135)
+                    WHEN LOWER-S-Z COMPUTE TOTAL = TOTAL +
+                                                  (MATCHING-DEC - 143)
+
+                    WHEN UPPER-A-I COMPUTE TOTAL = TOTAL +
+                                             (MATCHING-DEC - 192) + 26
+                    WHEN UPPER-J-R COMPUTE TOTAL = TOTAL +
+                                             (MATCHING-DEC - 199) + 26
+                    WHEN UPPER-S-Z COMPUTE TOTAL = TOTAL +
+                                             (MATCHING-DEC - 207) + 26
+                 END-EVALUATE
+
+           END-READ
+           END-PERFORM
+           .
+
+
+       A101-WRITE-OUTPUT.
+           DISPLAY TOTAL
+           MOVE TOTAL TO OUT-DATA-REC
+           WRITE OUT-DATA-REC
+           .
